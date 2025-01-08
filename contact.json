@@ -1,0 +1,11 @@
+{
+    "contacts": [
+      {
+        "name": "Jason Yale",
+        "email": "jasontyale@gmail.com",
+        "phone": "509-591-8970",
+        "address": "802 E 13th ave, Kennewick, WA, 99336",
+        "contact_type": "student"
+      }
+    ]
+  }

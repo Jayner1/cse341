@@ -9,7 +9,7 @@ app.get('/', (req, res) => {
 app.get('/contacts', (req, res) => {
     res.json({
       contacts: [
-        { name: '', email: '', phone: "" }
+        { name: '', email: '', phone: '' }
       ]
     });
   });

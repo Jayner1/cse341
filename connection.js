@@ -5,22 +5,19 @@ async function main() {
  * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
  * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
  */
-const uri = "mongodb+srv://syale0312:1qA2Edbii9wNVpQE@freecluster.kqrpk.mongodb.net/sample_airbnb?retryWrites=true&w=majority";
+const uri = "mongodb+srv://syale0312:1qA2Edbii9wNVpQE@freecluster.kqrpk.mongodb.net/contacts?retryWrites=true&w=majority";
 
 
 const client = new MongoClient(uri);
 
     try {
-        // Connect to the MongoDB cluster
         await client.connect();
 
-        // Make the appropriate DB calls
         await listDatabases(client);
 
     } catch (e) {
         console.error(e);
     } finally {
-        // Close the connection to the MongoDB cluster
         await client.close();
     }
 }

@@ -17,3 +17,19 @@ Content-Type: application/json
     "birthday":"1977-03-10"
 }
 
+###
+
+PUT https://cse341-j3hg.onrender.com/contacts/67959c5798b15c2f4989e012 HTTP/1.1
+Content-Type: application/json
+
+{
+    "firstName":"Billy",
+    "lastName":"Bob",
+    "email":"billybob@thorton.com",
+    "favoriteColor":"White",
+    "birthday":"1977-03-10"
+}
+
+###
+
+DELETE https://cse341-j3hg.onrender.com/contacts/67959c5798b15c2f4989e012 HTTP/1.1

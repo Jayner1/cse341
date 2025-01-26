@@ -71,7 +71,7 @@ router.put('/:id', async (req, res) => {
     const updatedContact = await contact.save();
 
     // Respond with a success message and status code
-    res.status(200).json({ message: "Contact updated successfully", contact: updatedContact });
+    res.status(204).json({ message: "Contact updated successfully", contact: updatedContact });
   } catch (error) {
     console.error("Error updating contact:", error);
     res.status(500).json({ message: "An error occurred while updating the contact." });

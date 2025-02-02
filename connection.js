@@ -4,9 +4,9 @@ async function main() {
   const uri = "mongodb+srv://syale0312:1qA2Edbii9wNVpQE@freecluster.kqrpk.mongodb.net/contacts?retryWrites=true&w=majority";
   
   const client = new MongoClient(uri, {
-    useNewUrlParser: true, // Ensures URL is properly parsed
-    useUnifiedTopology: true, // Uses the new connection management engine
-    serverSelectionTimeoutMS: 30000 // 30 seconds timeout for server selection
+    useNewUrlParser: true, 
+    useUnifiedTopology: true, 
+    serverSelectionTimeoutMS: 30000
   });
 
   try {

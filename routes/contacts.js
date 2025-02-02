@@ -3,7 +3,6 @@ const router = express.Router();
 
 const contactsController = require('../controllers/contacts');
 
-// Define routes and associate with controller methods
 router.get('/', contactsController.getAll);
 router.get('/:id', contactsController.getSingle);
 router.post('/', contactsController.createContact);

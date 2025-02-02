@@ -11,13 +11,13 @@ const connectDb = (callback) => {
     .then((client) => {
       dbConnection = client.db();
       console.log("Connected to Database");
-      callback();  // Call the callback once the connection is successful
+      callback();  
     })
     .catch((err) => {
-      callback(err);  // Call the callback with the error if connection fails
+      callback(err);  
     });
 };
 
-const getDb = () => dbConnection;  // Function to get the database connection
+const getDb = () => dbConnection;  
 
 module.exports = { connectDb, getDb };

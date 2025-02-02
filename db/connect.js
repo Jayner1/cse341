@@ -2,31 +2,22 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { MongoClient } = require('mongodb');
 
-let _db;
+let dbConnection;
 
-const initDb = (callback) => {
-  if (_db) {
-    console.log('Db is already initialized!');
-    return callback(null, _db);
-  }
-  MongoClient.connect(process.env.MONGO_URI)  // Ensure MONGO_URI is in .env
+const connectDb = (callback) => {
+  const uri = "mongodb+srv://syale0312:1qA2Edbii9wNVpQE@freecluster.kqrpk.mongodb.net/contacts?retryWrites=true&w=majority";
+
+  MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((client) => {
-      _db = client.db('contacts');  // Specify database name if needed
-      callback(null, _db);
+      dbConnection = client.db();
+      console.log("Connected to Database");
+      callback();  // Call the callback once the connection is successful
     })
     .catch((err) => {
-      callback(err);
+      callback(err);  // Call the callback with the error if connection fails
     });
 };
 
-const getDb = () => {
-  if (!_db) {
-    throw new Error('Db not initialized');
-  }
-  return _db;
-};
+const getDb = () => dbConnection;  // Function to get the database connection
 
-module.exports = {
-  initDb,
-  getDb
-};
+module.exports = { connectDb, getDb };

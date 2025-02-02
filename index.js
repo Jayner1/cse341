@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');  // Import cors package
+const cors = require('cors');
 const mongodb = require('./db/connect');
 
 const port = process.env.PORT || 8080;
@@ -18,7 +18,7 @@ app
   })
   .use('/', require('./routes'));
 
-mongodb.initDb((err) => {
+mongodb.connectDb((err) => {  // Changed this line to use connectDb
   if (err) {
     console.log(err);
   } else {

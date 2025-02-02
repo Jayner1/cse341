@@ -3,10 +3,17 @@ const { MongoClient } = require('mongodb');
 async function main() {
   const uri = "mongodb+srv://syale0312:1qA2Edbii9wNVpQE@freecluster.kqrpk.mongodb.net/contacts?retryWrites=true&w=majority";
   
-  const client = new MongoClient(uri);
+  const client = new MongoClient(uri, {
+    useNewUrlParser: true, // Ensures URL is properly parsed
+    useUnifiedTopology: true, // Uses the new connection management engine
+    serverSelectionTimeoutMS: 30000 // 30 seconds timeout for server selection
+  });
 
   try {
+    console.log("Connecting to MongoDB...");
     await client.connect();
+    console.log("Connected to MongoDB");
+
     await listDatabases(client);
   } catch (e) {
     console.error('Error connecting to MongoDB:', e);
@@ -22,8 +29,11 @@ main().catch(console.error);
  * @param {MongoClient} client A MongoClient that is connected to a cluster
  */
 async function listDatabases(client) {
-  const databasesList = await client.db('contacts').admin().listDatabases();
-
-  console.log("Databases:");
-  databasesList.databases.forEach(db => console.log(` - ${db.name}`));
-};
+  try {
+    const databasesList = await client.db().admin().listDatabases();
+    console.log("Databases:");
+    databasesList.databases.forEach(db => console.log(` - ${db.name}`));
+  } catch (error) {
+    console.error('Error listing databases:', error);
+  }
+}

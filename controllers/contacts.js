@@ -61,10 +61,12 @@ router.put('/:id', async (req, res) => {
 
 // GET all contacts
 const getAll = async (req, res) => {
-  console.log('Fetching contacts...');
   try {
-    const contacts = await Contact.find();
-    res.status(200).json(contacts);
+    const client = await MongoClient.connect(uri);
+    const db = client.db(); // Select the database
+    const contacts = await db.collection('contacts').find().toArray(); // Fetch contacts from the collection
+    res.status(200).json(contacts); // Return the contacts as a JSON response
+    client.close(); // Close the connection
   } catch (error) {
     console.error("Error fetching contacts:", error);
     res.status(500).json({ message: "An error occurred while retrieving contacts." });

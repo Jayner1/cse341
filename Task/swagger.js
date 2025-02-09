@@ -10,7 +10,7 @@ const doc = {
     version: '1.0.0',
   },
   schemes: ['https'],  
-  host: 'https://task-as5j.onrender.com', 
+  host: 'task-as5j.onrender.com', 
   basePath: '/',
   securityDefinitions: {
     apiKey: {

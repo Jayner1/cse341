@@ -1,0 +1,60 @@
+GET https://task-as5j.onrender.com HTTP/1.1
+
+###
+
+GET https://task-as5j.onrender.com/tasks HTTP/1.1
+
+###
+
+POST https://task-as5j.onrender.com/tasks HTTP/1.1
+Content-Type: application/json
+
+{
+
+}
+
+###
+
+PUT https://task-as5j.onrender.com/tasks/ HTTP/1.1
+Content-Type: application/json
+
+{
+
+}
+
+###
+
+DELETE https://task-as5j.onrender.com/tasks/ HTTP/1.1
+
+
+
+# LOCALHOST
+GET https://localhost:8080 HTTP/1.1
+
+###
+
+GET https://localhost:8080/tasks HTTP/1.1
+
+###
+
+POST https://localhost:8080/tasks HTTP/1.1
+Content-Type: application/json
+
+{
+
+}
+
+###
+
+PUT https://localhost:8080/tasks/ HTTP/1.1
+Content-Type: application/json
+
+{
+
+}
+
+###
+
+DELETE https://localhost:8080/tasks/ HTTP/1.1
+
+

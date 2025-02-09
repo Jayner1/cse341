@@ -5,10 +5,10 @@
     "description": "API documentation for the Task Manager application",
     "version": "1.0.0"
   },
-  "host": "https://task-as5j.onrender.com",
+  "host": "https://task-as5j.onrender.com", 
   "basePath": "/",
   "schemes": [
-    "http"
+    "https" 
   ],
   "securityDefinitions": {
     "apiKey": {
@@ -17,6 +17,7 @@
       "name": "apiKey",
       "description": "API Key needed to access the endpoints"
     }
+  
   },
   "paths": {
     "/tasks": {

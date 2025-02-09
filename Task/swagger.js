@@ -9,9 +9,9 @@ const doc = {
     description: 'API documentation for the Task Manager application',
     version: '1.0.0',
   },
-  host: 'https://task-as5j.onrender.com',  
+  schemes: ['https'],  
+  host: 'https://task-as5j.onrender.com', 
   basePath: '/',
-  schemes: ['https'],
   securityDefinitions: {
     apiKey: {
       type: 'apiKey',

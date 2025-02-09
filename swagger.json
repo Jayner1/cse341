@@ -23,50 +23,63 @@
     },
     "/contacts/": {
       "get": {
-        "description": "Get all contacts",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
         "responses": {
           "200": {
-            "description": "Successfully retrieved contacts",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Contact"
-              }
-            }
+            "description": "OK"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal Server Error"
           }
         }
       },
       "post": {
-        "description": "Create a new contact",
+        "description": "",
         "parameters": [
           {
-            "name": "contact",
+            "name": "body",
             "in": "body",
-            "required": true,
             "schema": {
-              "$ref": "#/definitions/Contact"
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "example": "any"
+                },
+                "lastName": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                },
+                "favoriteColor": {
+                  "example": "any"
+                },
+                "birthday": {
+                  "example": "any"
+                }
+              }
             }
           }
         ],
         "responses": {
           "201": {
-            "description": "Contact created successfully"
-          },
-          "400": {
-            "description": "Invalid input"
+            "description": "Created"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal Server Error"
           }
         }
       }
     },
     "/contacts/{id}": {
       "get": {
-        "description": "Get a contact by ID",
+        "description": "",
+        "produces": [
+          "application/json"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -77,21 +90,15 @@
         ],
         "responses": {
           "200": {
-            "description": "Successfully retrieved contact",
-            "schema": {
-              "$ref": "#/definitions/Contact"
-            }
-          },
-          "404": {
-            "description": "Contact not found"
+            "description": "OK"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal Server Error"
           }
         }
       },
       "put": {
-        "description": "Update a contact by ID",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -100,31 +107,41 @@
             "type": "string"
           },
           {
-            "name": "contact",
+            "name": "body",
             "in": "body",
-            "required": true,
             "schema": {
-              "$ref": "#/definitions/Contact"
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "example": "any"
+                },
+                "lastName": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                },
+                "favoriteColor": {
+                  "example": "any"
+                },
+                "birthday": {
+                  "example": "any"
+                }
+              }
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Successfully updated contact"
-          },
-          "400": {
-            "description": "Invalid input"
-          },
-          "404": {
-            "description": "Contact not found"
+          "204": {
+            "description": "No Content"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal Server Error"
           }
         }
       },
       "delete": {
-        "description": "Delete a contact by ID",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -134,48 +151,14 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Successfully deleted contact"
-          },
-          "404": {
-            "description": "Contact not found"
+          "204": {
+            "description": "No Content"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Internal Server Error"
           }
         }
       }
-    }
-  },
-  "definitions": {
-    "Contact": {
-      "type": "object",
-      "properties": {
-        "firstName": {
-          "type": "string"
-        },
-        "lastName": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string",
-          "format": "email"
-        },
-        "favoriteColor": {
-          "type": "string"
-        },
-        "birthday": {
-          "type": "string",
-          "format": "date"
-        }
-      },
-      "required": [
-        "firstName",
-        "lastName",
-        "email",
-        "favoriteColor",
-        "birthday"
-      ]
     }
   }
 }

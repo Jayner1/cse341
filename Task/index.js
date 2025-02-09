@@ -18,15 +18,20 @@ app.use('/tasks', taskRoutes);
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, { 
+      useNewUrlParser: true, 
+      useUnifiedTopology: true 
+    });
     console.log('Connected to the database!');
-  })
-  .catch((err) => {
-    console.log('Cannot connect to the database!', err);
-    process.exit();
-  });
+  } catch (err) {
+    console.error('Cannot connect to the database!', err);
+    process.exit(1); 
+  }
+};
+
+connectDB();
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

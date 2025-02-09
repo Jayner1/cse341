@@ -12,7 +12,14 @@ const swaggerDocument = require('./swagger/swagger.json');
 const taskRoutes = require('./routes/taskRoutes');
 const Task = require('./models/taskModel');
 
-app.use(cors());
+const corsOptions = {
+  origin: '*',  
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+};
+
+app.use(cors(corsOptions)); 
+
 app.use(express.json());
 app.use('/tasks', taskRoutes);
 

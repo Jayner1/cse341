@@ -1,0 +1,141 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Task API",
+    "description": "API documentation for the task management system.",
+    "version": "1.0.0"
+  },
+  "host": "https://task-as5j.onrender.com",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/tasks": {
+      "get": {
+        "summary": "Get all tasks",
+        "description": "Returns a list of tasks",
+        "responses": {
+          "200": {
+            "description": "A list of tasks",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Task"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new task",
+        "description": "Creates a new task in the system",
+        "parameters": [
+          {
+            "name": "task",
+            "in": "body",
+            "description": "Task object",
+            "schema": {
+              "$ref": "#/definitions/Task"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Task created successfully"
+          }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      "get": {
+        "summary": "Get task by ID",
+        "description": "Returns a task by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of task to retrieve",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A task",
+            "schema": {
+              "$ref": "#/definitions/Task"
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update task by ID",
+        "description": "Updates an existing task",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of task to update",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "task",
+            "in": "body",
+            "description": "Updated task object",
+            "schema": {
+              "$ref": "#/definitions/Task"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task updated successfully"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete task by ID",
+        "description": "Deletes a task by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of task to delete",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task deleted successfully"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "60d20c4f3e4e3e5d02b2b16f"
+        },
+        "title": {
+          "type": "string",
+          "example": "Complete project"
+        },
+        "description": {
+          "type": "string",
+          "example": "Finish the Node.js project"
+        },
+        "completed": {
+          "type": "boolean",
+          "example": false
+        }
+      }
+    }
+  }
+}

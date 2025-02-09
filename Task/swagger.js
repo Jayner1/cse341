@@ -9,7 +9,7 @@ const doc = {
     description: 'API documentation for the Task Manager application',
     version: '1.0.0',
   },
-  host: 'localhost:8080',
+  host: 'https://task-as5j.onrender.com',
   basePath: '/',
   schemes: ['http'],
   securityDefinitions: {

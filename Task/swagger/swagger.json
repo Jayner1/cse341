@@ -5,10 +5,10 @@
     "description": "API documentation for the Task Manager application",
     "version": "1.0.0"
   },
-  "host": "task-as5j.onrender.com", 
+  "host": "task-as5j.onrender.com",
   "basePath": "/",
   "schemes": [
-    "https" 
+    "https"
   ],
   "securityDefinitions": {
     "apiKey": {
@@ -17,7 +17,6 @@
       "name": "apiKey",
       "description": "API Key needed to access the endpoints"
     }
-  
   },
   "paths": {
     "/tasks": {
@@ -108,11 +107,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Task Updated",
-            "schema": {
-              "$ref": "#/definitions/Task"
-            }
+          "204": {
+            "description": "Task Updated (No Content)"
           },
           "404": {
             "description": "Task Not Found"

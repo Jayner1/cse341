@@ -24,14 +24,21 @@ exports.getTaskById = async (req, res) => {
 // POST a new task
 exports.createTask = async (req, res) => {
   try {
-    const newTask = new Task(req.body);
+    const { title, description, dueDate, status } = req.body;
+    
+    const newTask = new Task({
+      title,
+      description,
+      dueDate,
+      status,
+    });
+
     await newTask.save();
     res.status(201).json(newTask);
   } catch (err) {
     res.status(500).json({ message: 'Error creating task', error: err });
   }
 };
-
 // PUT to update a task
 exports.updateTask = async (req, res) => {
   try {

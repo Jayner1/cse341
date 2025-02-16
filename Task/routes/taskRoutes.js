@@ -1,45 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
-
-/**
- * @swagger
- * /tasks:
- *   get:
- *     summary: Get all tasks
- *     description: Retrieve a list of all tasks
- *     responses:
- *       200:
- *         description: Successfully fetched tasks
- *       401:
- *         description: Unauthorized access
- *     security:
- *       - apiKey: []
- */
-router.get('/', taskController.getTasks);
-
-/**
- * @swagger
- * /tasks/{id}:
- *   get:
- *     summary: Get task by ID
- *     description: Retrieve a task by its unique ID
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         description: ID of the task to retrieve
- *     responses:
- *       200:
- *         description: Successfully fetched task by ID
- *       404:
- *         description: Task not found
- *       401:
- *         description: Unauthorized access
- *     security:
- *       - apiKey: []
- */
-router.get('/:id', taskController.getTaskById);
+const { taskValidation, validateTaskId, handleValidationErrors } = require('../validation/taskValidation');  // Import validation logic
 
 /**
  * @swagger
@@ -56,13 +18,14 @@ router.get('/:id', taskController.getTaskById);
  *             properties:
  *               title:
  *                 type: string
- *                 description: The title of the task
  *               description:
  *                 type: string
- *                 description: Detailed description of the task
- *               completed:
- *                 type: boolean
- *                 description: Indicates whether the task is completed
+ *               dueDate:
+ *                 type: string
+ *                 format: date
+ *               status:
+ *                 type: string
+ *                 enum: ['pending', 'in-progress', 'completed']
  *     responses:
  *       201:
  *         description: Task successfully created
@@ -71,7 +34,7 @@ router.get('/:id', taskController.getTaskById);
  *     security:
  *       - apiKey: []
  */
-router.post('/', taskController.createTask);
+router.post('/', taskValidation, handleValidationErrors, taskController.createTask);
 
 /**
  * @swagger
@@ -95,8 +58,9 @@ router.post('/', taskController.createTask);
  *                 type: string
  *               description:
  *                 type: string
- *               completed:
- *                 type: boolean
+ *               status:
+ *                 type: string
+ *                 enum: ['pending', 'in-progress', 'completed']
  *     responses:
  *       200:
  *         description: Task successfully updated
@@ -107,7 +71,30 @@ router.post('/', taskController.createTask);
  *     security:
  *       - apiKey: []
  */
-router.put('/:id', taskController.updateTask);
+router.put('/:id', taskValidation, handleValidationErrors, taskController.updateTask);
+
+/**
+ * @swagger
+ * /tasks/{id}:
+ *   get:
+ *     summary: Get task by ID
+ *     description: Retrieve a task by its unique ID
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID of the task to retrieve
+ *     responses:
+ *       200:
+ *         description: Successfully fetched task by ID
+ *       404:
+ *         description: Task not found
+ *       401:
+ *         description: Unauthorized access
+ *     security:
+ *       - apiKey: []
+ */
+router.get('/:id', validateTaskId, handleValidationErrors, taskController.getTaskById);
 
 /**
  * @swagger
@@ -130,6 +117,6 @@ router.put('/:id', taskController.updateTask);
  *     security:
  *       - apiKey: []
  */
-router.delete('/:id', taskController.deleteTask);
+router.delete('/:id', validateTaskId, handleValidationErrors, taskController.deleteTask);
 
 module.exports = router;

@@ -1,8 +1,7 @@
 const Task = require('../models/taskModel');
 
-// Utility function for consistent error handling
 const handleError = (res, statusCode, message, error) => {
-  console.error(error); // Log the error details
+  console.error(error); 
   return res.status(statusCode).json({
     message: message || 'An unexpected error occurred.',
     error: error.message || error,

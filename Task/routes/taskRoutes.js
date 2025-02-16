@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
-const { taskValidation, validateTaskId, handleValidationErrors } = require('../validation/taskValidation');  // Import validation logic
+const { taskValidation, validateTaskId, handleValidationErrors } = require('../validation/taskValidation'); 
 
 // GET all tasks
 router.get('/', taskController.getTasks);

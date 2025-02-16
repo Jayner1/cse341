@@ -1,6 +1,5 @@
 const { body, param, validationResult } = require('express-validator');
 
-// Validation schema for creating and updating tasks
 const taskValidation = [
   body('title')
     .isString()
@@ -31,14 +30,12 @@ const taskValidation = [
     .withMessage('Status is required'),
 ];
 
-// Validation for task ID in GET and DELETE routes
 const validateTaskId = [
   param('id')
     .isMongoId()
     .withMessage('Invalid task ID format')
 ];
 
-// Function to check validation errors
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

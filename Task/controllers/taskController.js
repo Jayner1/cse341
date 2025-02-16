@@ -1,12 +1,24 @@
 const Task = require('../models/taskModel');
 
+// Utility function for consistent error handling
+const handleError = (res, statusCode, message, error) => {
+  console.error(error); // Log the error details
+  return res.status(statusCode).json({
+    message: message || 'An unexpected error occurred.',
+    error: error.message || error,
+  });
+};
+
 // GET all tasks
 exports.getTasks = async (req, res) => {
   try {
     const tasks = await Task.find();
+    if (!tasks || tasks.length === 0) {
+      return res.status(404).json({ message: 'No tasks found' });
+    }
     res.status(200).json(tasks);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching tasks', error: err });
+    handleError(res, 500, 'Error fetching tasks', err);
   }
 };
 
@@ -17,7 +29,7 @@ exports.getTaskById = async (req, res) => {
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.status(200).json(task);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching task', error: err });
+    handleError(res, 500, 'Error fetching task', err);
   }
 };
 
@@ -25,7 +37,11 @@ exports.getTaskById = async (req, res) => {
 exports.createTask = async (req, res) => {
   try {
     const { title, description, dueDate, status } = req.body;
-    
+
+    if (!title || !description || !dueDate || !status) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
     const newTask = new Task({
       title,
       description,
@@ -36,9 +52,10 @@ exports.createTask = async (req, res) => {
     await newTask.save();
     res.status(201).json(newTask);
   } catch (err) {
-    res.status(500).json({ message: 'Error creating task', error: err });
+    handleError(res, 500, 'Error creating task', err);
   }
 };
+
 // PUT to update a task
 exports.updateTask = async (req, res) => {
   try {
@@ -46,7 +63,7 @@ exports.updateTask = async (req, res) => {
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.status(200).json(task);
   } catch (err) {
-    res.status(500).json({ message: 'Error updating task', error: err });
+    handleError(res, 500, 'Error updating task', err);
   }
 };
 
@@ -57,6 +74,6 @@ exports.deleteTask = async (req, res) => {
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.status(200).json({ message: 'Task deleted successfully' });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting task', error: err });
+    handleError(res, 500, 'Error deleting task', err);
   }
 };

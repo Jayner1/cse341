@@ -6,6 +6,7 @@ const doc = {
     description: 'Temple API'
   },
   host: 'cse341-j3hg.onrender.com',
+  // host: 'localhost:8080',
   schemes: ['https']
 };
 

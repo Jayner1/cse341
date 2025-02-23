@@ -16,55 +16,69 @@
       "in": "header",
       "name": "apiKey",
       "description": "API Key needed to access the endpoints"
+    },
+    "OAuth2": {
+      "type": "oauth2",
+      "flow": "implicit",
+      "authorizationUrl": "https://your-auth-server/auth",
+      "tokenUrl": "https://your-auth-server/token",
+      "scopes": {
+        "read": "Read access to tasks",
+        "write": "Write access to tasks"
+      }
     }
   },
   "paths": {
-    "/tasks": {
+    "/": {
       "get": {
-        "description": "Fetch all tasks",
+        "description": "",
         "responses": {
           "200": {
-            "description": "OK",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Task"
-              }
-            }
+            "description": "OK"
           },
-          "500": {
-            "description": "Internal Server Error"
+          "404": {
+            "description": "Not Found"
           }
         }
       },
       "post": {
-        "description": "Create a new task",
+        "description": "",
         "parameters": [
           {
+            "name": "body",
             "in": "body",
-            "name": "task",
-            "required": true,
             "schema": {
-              "$ref": "#/definitions/Task"
+              "type": "object",
+              "properties": {
+                "title": {
+                  "example": "Complete the project report"
+                },
+                "description": {
+                  "example": "Finalize and submit the project report by the end of the week."
+                },
+                "dueDate": {
+                  "example": "2025-03-01"
+                },
+                "status": {
+                  "example": "pending"
+                }
+              }
             }
           }
         ],
         "responses": {
           "201": {
-            "description": "Task Created",
-            "schema": {
-              "$ref": "#/definitions/Task"
-            }
+            "description": "Created"
           },
-          "500": {
-            "description": "Internal Server Error"
+          "400": {
+            "description": "Bad Request"
           }
         }
       }
     },
-    "/tasks/{id}": {
+    "/{id}": {
       "get": {
-        "description": "Fetch a task by ID",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -75,51 +89,40 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/Task"
-            }
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "404": {
-            "description": "Task Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
+            "description": "Not Found"
           }
         }
       },
       "put": {
-        "description": "Update a task by ID",
+        "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "in": "body",
-            "name": "task",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Task"
-            }
           }
         ],
         "responses": {
           "204": {
-            "description": "Task Updated (No Content)"
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "404": {
-            "description": "Task Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
+            "description": "Not Found"
           }
         }
       },
       "delete": {
-        "description": "Delete a task by ID",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -130,13 +133,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Task Deleted"
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "404": {
-            "description": "Task Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
+            "description": "Not Found"
           }
         }
       }
@@ -146,31 +149,125 @@
     "Task": {
       "type": "object",
       "properties": {
-        "title": {
+        "type": {
           "type": "string",
-          "example": "Complete Homework"
+          "example": "object"
         },
-        "description": {
-          "type": "string",
-          "example": "Math and History assignments"
+        "required": {
+          "type": "array",
+          "example": [
+            "title",
+            "description",
+            "dueDate",
+            "status"
+          ],
+          "items": {
+            "type": "string"
+          }
         },
-        "dueDate": {
-          "type": "string",
-          "format": "date",
-          "example": "2025-02-10"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["pending", "completed"],
-          "example": "pending"
+        "properties": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Title of the task"
+                }
+              }
+            },
+            "description": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Description of the task"
+                }
+              }
+            },
+            "dueDate": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "format": {
+                  "type": "string",
+                  "example": "date"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Due date of the task"
+                }
+              }
+            },
+            "status": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    "pending",
+                    "completed",
+                    "in-progress"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Status of the task"
+                }
+              }
+            },
+            "completed": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Whether the task is completed"
+                },
+                "default": {
+                  "type": "boolean",
+                  "example": false
+                }
+              }
+            },
+            "_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "The unique identifier for the task"
+                }
+              }
+            }
+          }
         }
-      },
-      "required": ["title", "description", "dueDate", "status"]
+      }
     }
-  },
-  "security": [
-    {
-      "apiKey": []
-    }
-  ]
+  }
 }

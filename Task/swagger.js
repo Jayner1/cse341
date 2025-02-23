@@ -9,24 +9,19 @@ const doc = {
     description: 'API documentation for the Task Manager application',
     version: '1.0.0',
   },
-  schemes: ['https'],  
-  host: 'task-as5j.onrender.com', 
+  schemes: ['http'], 
+  host: 'localhost:8080', 
   basePath: '/',
   securityDefinitions: {
-    apiKey: {
-      type: 'apiKey',
-      in: 'header',
-      name: 'apiKey',
-      description: 'API Key needed to access the endpoints',
-    },
     OAuth2: {
       type: 'oauth2',
       flow: 'implicit',
-      authorizationUrl: 'https://your-auth-server/auth',
-      tokenUrl: 'https://your-auth-server/token',
+      authorizationUrl: 'https://accounts.google.com/o/oauth2/auth', 
+      tokenUrl: 'https://accounts.google.com/o/oauth2/token',
       scopes: {
-        read: 'Read access to tasks',
-        write: 'Write access to tasks',
+        'https://www.googleapis.com/auth/userinfo.profile': 'Access your profile',
+        'https://www.googleapis.com/auth/userinfo.email': 'Access your email',
+        'openid': 'Authenticate the user',
       },
     },
   },
@@ -37,7 +32,7 @@ const doc = {
         description: 'Retrieve a list of all tasks in the system',
         security: [
           {
-            OAuth2: ['read'],
+            OAuth2: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid'],
           },
         ],
         responses: {
@@ -60,7 +55,7 @@ const doc = {
         description: 'Create a new task with the provided details',
         security: [
           {
-            OAuth2: ['write'],
+            OAuth2: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid'],
           },
         ],
         parameters: [
@@ -96,7 +91,7 @@ const doc = {
         description: 'Retrieve a specific task by its ID',
         security: [
           {
-            OAuth2: ['read'],
+            OAuth2: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid'],
           },
         ],
         parameters: [
@@ -128,7 +123,7 @@ const doc = {
         description: 'Update a specific task with new details',
         security: [
           {
-            OAuth2: ['write'],
+            OAuth2: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid'],
           },
         ],
         parameters: [
@@ -169,7 +164,7 @@ const doc = {
         description: 'Delete a specific task by its ID',
         security: [
           {
-            OAuth2: ['write'],
+            OAuth2: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email', 'openid'],
           },
         ],
         parameters: [

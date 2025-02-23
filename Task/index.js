@@ -1,162 +1,72 @@
 require('dotenv').config();
-const fs = require('fs').promises;
-const path = require('path');
-const process = require('process');
+
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const passport = require('passport');
 const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const taskRoutes = require('./routes/taskRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger/swagger.json');
-const taskRoutes = require('./routes/taskRoutes');
-const User = require('./models/userModel'); 
-require('./passport-setup'); 
 
 const app = express();
 
-// Google API setup
-const { authenticate } = require('@google-cloud/local-auth');
-const { google } = require('googleapis');
-const SCOPES = ['https://www.googleapis.com/auth/contacts.readonly'];
-const TOKEN_PATH = path.join(process.cwd(), 'token.json');
-const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
-
-// Middleware
-const corsOptions = {
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
-app.use(cors(corsOptions));
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
 app.use(express.json());
-
-// Session middleware
 app.use(session({
-  secret: 'your_secret_key', 
+  secret: 'your_secret_key',
   resave: false,
   saveUninitialized: true,
 }));
-
-// Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Task routes
-app.use('/tasks', taskRoutes);
-
-// Swagger documentation
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-// User registration route
-app.post('/auth/register', async (req, res) => {
-  const { username, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10); 
-  try {
-    const user = new User({ username, password: hashedPassword });
-    await user.save();
-    res.status(201).json({ message: 'User registered successfully!' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error registering user' });
-  }
-});
-
-// User login route
-app.post('/auth/login', passport.authenticate('local', {
-  successRedirect: '/profile',
-  failureRedirect: '/',
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.GOOGLE_CALLBACK_URL,
+}, (accessToken, refreshToken, profile, done) => {
+  return done(null, profile);
 }));
 
-// Route to show user profile
-app.get('/profile', (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.redirect('/');
-  }
-  res.send(`<h1>Hello ${req.user.username}</h1><a href="/logout">Logout</a>`);
-});
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
 
-// Logout route
+const scopes = [
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+].join(' ');
+
+app.get('/auth/google', passport.authenticate('google', { scope: scopes }));
+
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (req, res) => {
+    res.redirect('/api-docs'); 
+  }
+);
+
 app.get('/logout', (req, res) => {
-  req.logout((err) => {
-    res.redirect('/');
+  req.session.destroy(() => {
+    res.redirect('/'); 
   });
 });
 
-// Home route
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the Task Manager API' });
+  res.send(`
+    <h1>Task Manager</h1>
+    ${req.isAuthenticated() ? `<p>Welcome, ${req.user.displayName}!</p> <a href="/logout">Logout</a>` : `<a href="/auth/google">Login with Google</a>`}
+  `);
 });
 
-// Google People API: Fetch contacts
-async function loadSavedCredentialsIfExist() {
-  try {
-    const content = await fs.readFile(TOKEN_PATH);
-    const credentials = JSON.parse(content);
-    return google.auth.fromJSON(credentials);
-  } catch (err) {
-    return null;
+app.use('/tasks', (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: 'Unauthorized. Please log in with Google.' });
   }
-}
+  next();
+}, taskRoutes);
 
-async function saveCredentials(client) {
-  const content = await fs.readFile(CREDENTIALS_PATH);
-  const keys = JSON.parse(content);
-  const key = keys.installed || keys.web;
-  const payload = JSON.stringify({
-    type: 'authorized_user',
-    client_id: key.client_id,
-    client_secret: key.client_secret,
-    refresh_token: client.credentials.refresh_token,
-  });
-  await fs.writeFile(TOKEN_PATH, payload);
-}
-
-async function authorize() {
-  let client = await loadSavedCredentialsIfExist();
-  if (client) {
-    return client;
-  }
-  client = await authenticate({
-    scopes: SCOPES,
-    keyfilePath: CREDENTIALS_PATH,
-  });
-  if (client.credentials) {
-    await saveCredentials(client);
-  }
-  return client;
-}
-
-// Route to handle OAuth2 redirect
-app.get('/oauth2callback', async (req, res) => {
-  const code = req.query.code;
-  if (code) {
-    // Exchange code for access token and save it
-    const client = await authorize();
-    res.send('Authorization successful! You can now use the API.');
-  } else {
-    res.status(400).send('No code received.');
-  }
-});
-
-// Fetch Google contacts
-app.get('/contacts', async (req, res) => {
-  try {
-    const auth = await authorize();
-    const service = google.people({ version: 'v1', auth });
-    const response = await service.people.connections.list({
-      resourceName: 'people/me',
-      pageSize: 10,
-      personFields: 'names,emailAddresses',
-    });
-    res.json(response.data.connections);
-  } catch (error) {
-    console.error('Error fetching contacts:', error);
-    res.status(500).json({ error: 'Error fetching contacts' });
-  }
-});
-
-// Connect to MongoDB
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
@@ -170,9 +80,10 @@ const connectDB = async () => {
   }
 };
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 connectDB();
 
-// Start the server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);

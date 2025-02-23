@@ -127,6 +127,19 @@ async function authorize() {
   return client;
 }
 
+// Route to handle OAuth2 redirect
+app.get('/oauth2callback', async (req, res) => {
+  const code = req.query.code;
+  if (code) {
+    // Exchange code for access token and save it
+    const client = await authorize();
+    res.send('Authorization successful! You can now use the API.');
+  } else {
+    res.status(400).send('No code received.');
+  }
+});
+
+// Fetch Google contacts
 app.get('/contacts', async (req, res) => {
   try {
     const auth = await authorize();

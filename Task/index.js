@@ -89,7 +89,7 @@ app.get('/logout', (req, res) => {
 
 // Home route
 app.get('/', (req, res) => {
-  res.send('<h1>Welcome to the Task Manager API</h1><a href="/auth/github">Login with GitHub</a>');
+  res.json({ message: 'Welcome to the Task Manager API' });
 });
 
 // Connect to MongoDB

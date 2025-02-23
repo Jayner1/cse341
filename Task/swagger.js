@@ -19,12 +19,27 @@ const doc = {
       name: 'apiKey',
       description: 'API Key needed to access the endpoints',
     },
+    OAuth2: {
+      type: 'oauth2',
+      flow: 'implicit',
+      authorizationUrl: 'https://your-auth-server/auth',
+      tokenUrl: 'https://your-auth-server/token',
+      scopes: {
+        read: 'Read access to tasks',
+        write: 'Write access to tasks',
+      },
+    },
   },
   paths: {
     '/tasks': {
       get: {
         summary: 'Get all tasks',
         description: 'Retrieve a list of all tasks in the system',
+        security: [
+          {
+            OAuth2: ['read'],
+          },
+        ],
         responses: {
           200: {
             description: 'OK',
@@ -43,6 +58,11 @@ const doc = {
       post: {
         summary: 'Create a new task',
         description: 'Create a new task with the provided details',
+        security: [
+          {
+            OAuth2: ['write'],
+          },
+        ],
         parameters: [
           {
             name: 'task',
@@ -74,6 +94,11 @@ const doc = {
       get: {
         summary: 'Get a task by ID',
         description: 'Retrieve a specific task by its ID',
+        security: [
+          {
+            OAuth2: ['read'],
+          },
+        ],
         parameters: [
           {
             name: 'id',
@@ -101,6 +126,11 @@ const doc = {
       put: {
         summary: 'Update a task by ID',
         description: 'Update a specific task with new details',
+        security: [
+          {
+            OAuth2: ['write'],
+          },
+        ],
         parameters: [
           {
             name: 'id',
@@ -137,6 +167,11 @@ const doc = {
       delete: {
         summary: 'Delete a task by ID',
         description: 'Delete a specific task by its ID',
+        security: [
+          {
+            OAuth2: ['write'],
+          },
+        ],
         parameters: [
           {
             name: 'id',

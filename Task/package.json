@@ -12,11 +12,13 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "googleapis": "^105.0.0",
     "mongoose": "^8.10.0",
     "swagger-autogen": "^2.23.7"
   }

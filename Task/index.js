@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const MongoStore = require('connect-mongo'); 
 const passport = require('./config/passport-setup');
 const taskRoutes = require('./routes/taskRoutes');
 const swaggerUi = require('swagger-ui-express');
@@ -18,8 +19,16 @@ app.use(express.json());
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your_secret_key',
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: true }, 
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: 'sessions', 
+  }),
+  cookie: { 
+    secure: true, 
+    sameSite: 'lax', 
+    maxAge: 24 * 60 * 60 * 1000 
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -34,6 +43,7 @@ app.get('/auth/google', passport.authenticate('google', { scope: scopes }));
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
+    console.log('User authenticated:', req.user._id); 
     res.redirect('/api-docs');
   }
 );
@@ -60,6 +70,7 @@ app.get('/', (req, res) => {
 
 const ensureAuthenticated = (req, res, next) => {
   if (!req.isAuthenticated()) {
+    console.log('Request not authenticated:', req.sessionID); 
     return res.status(401).json({ error: 'Unauthorized. Please log in with Google.' });
   }
   next();

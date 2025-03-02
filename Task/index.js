@@ -14,7 +14,9 @@ const app = express();
 // Middleware
 app.use(cors({ 
   origin: 'https://task-as5j.onrender.com', 
-  credentials: true 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(session({
@@ -24,24 +26,25 @@ app.use(session({
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
     collectionName: 'sessions',
-    ttl: 24 * 60 * 60, // 24 hours in seconds
+    ttl: 24 * 60 * 60,
   }),
   cookie: { 
     secure: true, // HTTPS on Render
-    sameSite: 'lax', // For OAuth redirects
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    httpOnly: true, // Prevent JS access
-    path: '/' // Site-wide
+    sameSite: 'lax', // Revert to lax for simpler cookie handling
+    maxAge: 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    path: '/'
   }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Debug Middleware: Log session and cookies
+// Debug Middleware
 app.use((req, res, next) => {
   console.log('Request Session ID:', req.sessionID);
   console.log('Request Session data:', req.session);
   console.log('Request Cookies:', req.cookies);
+  console.log('Request Headers:', req.headers);
   next();
 });
 
@@ -56,17 +59,17 @@ app.get('/auth/google', passport.authenticate('google', { scope: scopes }));
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    console.log('Callback - User authenticated:', req.user ? req.user._id : 'No user');
-    console.log('Callback - Session before regen:', req.session);
-    // Regenerate session to ensure cookie is set
-    req.session.regenerate((err) => {
+    console.log('Callback - User:', req.user ? req.user._id : 'No user');
+    console.log('Callback - Session before save:', req.session);
+    req.session.passport = { user: req.user._id }; // Set Passport data
+    req.session.save((err) => {
       if (err) {
-        console.error('Session regen error:', err);
+        console.error('Session save error:', err);
         return res.status(500).send('Session error');
       }
-      req.session.passport = { user: req.user._id }; // Explicitly set passport data
-      console.log('Callback - Session after regen:', req.session);
+      console.log('Callback - Session after save:', req.session);
       console.log('Callback - Setting cookie connect.sid:', req.sessionID);
+      res.setHeader('Set-Cookie', `connect.sid=${req.sessionID}; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400`); // Manual header
       res.redirect('/api-docs');
     });
   }
@@ -75,10 +78,7 @@ app.get('/auth/google/callback',
 app.get('/logout', (req, res) => {
   console.log('Logout - Session:', req.sessionID);
   req.logout((err) => {
-    if (err) {
-      console.error('Logout error:', err);
-      return res.status(500).send('Logout failed');
-    }
+    if (err) console.error('Logout error:', err);
     req.session.destroy((err) => {
       if (err) console.error('Session destroy error:', err);
       res.redirect('/');

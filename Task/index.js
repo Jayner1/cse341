@@ -67,7 +67,11 @@ const ensureAuthenticated = (req, res, next) => {
 
 app.use('/tasks', ensureAuthenticated, taskRoutes);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+  swaggerOptions: {
+    withCredentials: true, 
+  }
+}));
 
 const connectDB = async () => {
   try {

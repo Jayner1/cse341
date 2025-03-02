@@ -29,8 +29,8 @@ app.use(session({
     ttl: 24 * 60 * 60,
   }),
   cookie: { 
-    secure: true, // HTTPS on Render
-    sameSite: 'lax', // Revert to lax for simpler cookie handling
+    secure: true,
+    sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
     path: '/'
@@ -61,7 +61,7 @@ app.get('/auth/google/callback',
   (req, res) => {
     console.log('Callback - User:', req.user ? req.user._id : 'No user');
     console.log('Callback - Session before save:', req.session);
-    req.session.passport = { user: req.user._id }; // Set Passport data
+    req.session.passport = { user: req.user._id };
     req.session.save((err) => {
       if (err) {
         console.error('Session save error:', err);
@@ -69,7 +69,7 @@ app.get('/auth/google/callback',
       }
       console.log('Callback - Session after save:', req.session);
       console.log('Callback - Setting cookie connect.sid:', req.sessionID);
-      res.setHeader('Set-Cookie', `connect.sid=${req.sessionID}; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400`); // Manual header
+      res.setHeader('Set-Cookie', `connect.sid=${req.sessionID}; Secure; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400`);
       res.redirect('/api-docs');
     });
   }

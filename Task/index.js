@@ -24,22 +24,24 @@ app.use(session({
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
     collectionName: 'sessions',
+    ttl: 24 * 60 * 60, // 24 hours in seconds
   }),
   cookie: { 
     secure: true, // HTTPS on Render
     sameSite: 'lax', // For OAuth redirects
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true, // Prevent JS access
-    path: '/' // Ensure cookie is sent for all paths
+    path: '/' // Site-wide
   }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Debug Middleware: Log session creation
+// Debug Middleware: Log session and cookies
 app.use((req, res, next) => {
-  console.log('Session ID:', req.sessionID);
-  console.log('Session data:', req.session);
+  console.log('Request Session ID:', req.sessionID);
+  console.log('Request Session data:', req.session);
+  console.log('Request Cookies:', req.cookies);
   next();
 });
 
@@ -55,9 +57,18 @@ app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
     console.log('Callback - User authenticated:', req.user ? req.user._id : 'No user');
-    console.log('Callback - Session:', req.session);
-    console.log('Callback - Setting cookie connect.sid:', req.sessionID);
-    res.redirect('/api-docs');
+    console.log('Callback - Session before regen:', req.session);
+    // Regenerate session to ensure cookie is set
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regen error:', err);
+        return res.status(500).send('Session error');
+      }
+      req.session.passport = { user: req.user._id }; // Explicitly set passport data
+      console.log('Callback - Session after regen:', req.session);
+      console.log('Callback - Setting cookie connect.sid:', req.sessionID);
+      res.redirect('/api-docs');
+    });
   }
 );
 
@@ -102,6 +113,16 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
     withCredentials: true,
   }
 }));
+
+// Debug Response Headers
+app.use((req, res, next) => {
+  const originalSend = res.send;
+  res.send = function (body) {
+    console.log('Response Headers:', res.getHeaders());
+    originalSend.call(this, body);
+  };
+  next();
+});
 
 // Database Connection
 const connectDB = async () => {

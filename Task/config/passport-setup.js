@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const User = require('../models/userModel'); 
+const User = require('../models/userModel');
 require('dotenv').config();
 
 passport.use(
@@ -30,12 +30,12 @@ passport.use(
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
             email: profile.emails[0].value,
-            image: profile.photos ? profile.photos[0].value : null, 
+            image: profile.photos ? profile.photos[0].value : null,
           });
           await user.save();
-          console.log('New user created:', user._id);
+          console.log('New user created:', user._id.toString());
         } else {
-          console.log('Existing user found:', user._id);
+          console.log('Existing user found:', user._id.toString());
         }
         return done(null, user);
       } catch (err) {
@@ -48,17 +48,18 @@ passport.use(
 
 passport.serializeUser((user, done) => {
   console.log('Serializing user:', user.id);
-  done(null, user.id); 
+  done(null, user.id); // Store MongoDB _id
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
+    console.log('Attempting to deserialize user with ID:', id);
     const user = await User.findById(id);
     if (!user) {
       console.log('User not found for ID:', id);
-      return done(null, false); 
+      return done(null, false);
     }
-    console.log('Deserialized user:', user.id);
+    console.log('Deserialized user:', user._id.toString());
     done(null, user);
   } catch (err) {
     console.error('Error deserializing user:', err.message);

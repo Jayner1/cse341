@@ -23,12 +23,11 @@ const taskValidation = [
     .matches(/^\d{4}-\d{2}-\d{2}$/)
     .withMessage('Due Date must be in YYYY-MM-DD format (e.g., 2025-03-20)')
     .custom((value) => {
-      const dueDate = new Date(value); // Converts "2025-03-20" to Date
+      const dueDate = new Date(value); 
       if (isNaN(dueDate.getTime())) {
         throw new Error('Invalid date format');
       }
       const now = new Date();
-      // Strip time for comparison
       dueDate.setHours(0, 0, 0, 0);
       now.setHours(0, 0, 0, 0);
       if (dueDate < now) {

@@ -48,7 +48,7 @@ passport.use(
 
 passport.serializeUser((user, done) => {
   console.log('Serializing user:', user.id);
-  done(null, user.id); // Store MongoDB _id
+  done(null, user.id); 
 });
 
 passport.deserializeUser(async (id, done) => {

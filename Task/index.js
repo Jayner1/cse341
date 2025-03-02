@@ -12,7 +12,6 @@ const swaggerDocument = require('./swagger/swagger.json');
 
 const app = express();
 
-// Middleware
 app.use(cors({ 
   origin: 'https://task-as5j.onrender.com', 
   credentials: true,
@@ -38,13 +37,12 @@ app.use(session({
   cookie: { 
     secure: true,
     sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 60 * 60 * 1000,
     httpOnly: true,
     path: '/'
   }
 }));
 
-// Sync Session Before Passport
 app.use((req, res, next) => {
   console.log('Pre-Sync - Request Session ID:', req.sessionID);
   console.log('Pre-Sync - Request Session data:', req.session);
@@ -58,7 +56,7 @@ app.use((req, res, next) => {
       }
       console.log('Stored session for connect.sid:', session);
       if (session) {
-        req.session.passport = session.passport; // Sync passport data only
+        req.session.passport = session.passport; 
         console.log('Session passport synced:', req.session);
       }
       next();
@@ -71,7 +69,6 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Debug Middleware After Passport
 app.use((req, res, next) => {
   console.log('Post-Passport - Request Session ID:', req.sessionID);
   console.log('Post-Passport - Request Session data:', req.session);
@@ -79,7 +76,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Authentication Routes
 const scopes = [
   'https://www.googleapis.com/auth/userinfo.email',
   'https://www.googleapis.com/auth/userinfo.profile',
@@ -117,7 +113,6 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// Home Route
 app.get('/', (req, res) => {
   console.log('Home - Authenticated:', req.isAuthenticated());
   res.send(`
@@ -126,7 +121,6 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Authentication Middleware
 const ensureAuthenticated = (req, res, next) => {
   console.log('ensureAuthenticated - Session:', req.sessionID, 'Authenticated:', req.isAuthenticated());
   if (!req.isAuthenticated()) {
@@ -135,17 +129,14 @@ const ensureAuthenticated = (req, res, next) => {
   next();
 };
 
-// Task Routes
 app.use('/tasks', ensureAuthenticated, taskRoutes);
 
-// Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
   swaggerOptions: {
     withCredentials: true,
   }
 }));
 
-// Debug Response Headers
 app.use((req, res, next) => {
   const originalSend = res.send;
   res.send = function (body) {
@@ -155,7 +146,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Database Connection
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
@@ -171,7 +161,6 @@ const connectDB = async () => {
   }
 };
 
-// Start Server
 connectDB().then(() => {
   const PORT = process.env.PORT || 8080;
   app.listen(PORT, () => {

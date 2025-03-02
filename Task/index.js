@@ -46,19 +46,28 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Debug Middleware
+// Debug Middleware with Session Fix
 app.use((req, res, next) => {
   console.log('Request Session ID:', req.sessionID);
-  console.log('Request Session data:', req.session);
+  console.log('Request Session data (initial):', req.session);
   console.log('Request Cookies:', req.cookies);
   console.log('Request Headers:', req.headers);
-  if (req.cookies['connect.sid']) {
+  if (req.cookies['connect.sid'] && !req.session.passport) {
     sessionStore.get(req.cookies['connect.sid'], (err, session) => {
-      if (err) console.error('Session store get error:', err);
+      if (err) {
+        console.error('Session store get error:', err);
+        return next();
+      }
       console.log('Stored session for connect.sid:', session);
+      if (session && session.passport) {
+        req.session.passport = session.passport; // Sync session data
+        console.log('Session data synced:', req.session);
+      }
+      next();
     });
+  } else {
+    next();
   }
-  next();
 });
 
 // Authentication Routes
@@ -74,7 +83,7 @@ app.get('/auth/google/callback',
   (req, res) => {
     console.log('Callback - User:', req.user ? req.user._id : 'No user');
     console.log('Callback - Session before save:', req.session);
-    req.session.passport = { user: req.user._id.toString() }; // Ensure string ID
+    req.session.passport = { user: req.user._id.toString() };
     req.session.save((err) => {
       if (err) {
         console.error('Session save error:', err);

@@ -43,15 +43,13 @@ app.use(session({
     path: '/'
   }
 }));
-app.use(passport.initialize());
-app.use(passport.session());
 
-// Debug Middleware with Session Fix
+// Sync Session Before Passport
 app.use((req, res, next) => {
-  console.log('Request Session ID:', req.sessionID);
-  console.log('Request Session data (initial):', req.session);
-  console.log('Request Cookies:', req.cookies);
-  console.log('Request Headers:', req.headers);
+  console.log('Pre-Sync - Request Session ID:', req.sessionID);
+  console.log('Pre-Sync - Request Session data:', req.session);
+  console.log('Pre-Sync - Request Cookies:', req.cookies);
+  console.log('Pre-Sync - Request Headers:', req.headers);
   if (req.cookies['connect.sid'] && !req.session.passport) {
     sessionStore.get(req.cookies['connect.sid'], (err, session) => {
       if (err) {
@@ -59,15 +57,26 @@ app.use((req, res, next) => {
         return next();
       }
       console.log('Stored session for connect.sid:', session);
-      if (session && session.passport) {
-        req.session.passport = session.passport; // Sync session data
-        console.log('Session data synced:', req.session);
+      if (session) {
+        req.session.passport = session.passport; // Sync passport data only
+        console.log('Session passport synced:', req.session);
       }
       next();
     });
   } else {
     next();
   }
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Debug Middleware After Passport
+app.use((req, res, next) => {
+  console.log('Post-Passport - Request Session ID:', req.sessionID);
+  console.log('Post-Passport - Request Session data:', req.session);
+  console.log('Post-Passport - Request User:', req.user ? req.user._id : 'No user');
+  next();
 });
 
 // Authentication Routes

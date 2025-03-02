@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const User = require('../models/userModel'); // Adjust path to your User model
+const User = require('../models/userModel'); 
 require('dotenv').config();
 
 passport.use(
@@ -16,7 +16,12 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Find or create user in MongoDB
+        console.log('Google OAuth profile received:', {
+          id: profile.id,
+          displayName: profile.displayName,
+          email: profile.emails ? profile.emails[0].value : 'N/A',
+        });
+
         let user = await User.findOne({ googleId: profile.id });
         if (!user) {
           user = new User({
@@ -24,14 +29,17 @@ passport.use(
             displayName: profile.displayName,
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
-            email: profile.emails[0].value, // Add email for consistency
-            image: profile.photos[0].value,
+            email: profile.emails[0].value,
+            image: profile.photos ? profile.photos[0].value : null, 
           });
           await user.save();
+          console.log('New user created:', user._id);
+        } else {
+          console.log('Existing user found:', user._id);
         }
         return done(null, user);
       } catch (err) {
-        console.error('Error in Google Strategy:', err);
+        console.error('Error in Google Strategy:', err.message);
         return done(err, null);
       }
     }
@@ -39,15 +47,21 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  done(null, user.id); // Store only the MongoDB _id in the session
+  console.log('Serializing user:', user.id);
+  done(null, user.id); 
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
+    if (!user) {
+      console.log('User not found for ID:', id);
+      return done(null, false); 
+    }
+    console.log('Deserialized user:', user.id);
     done(null, user);
   } catch (err) {
-    console.error('Error deserializing user:', err);
+    console.error('Error deserializing user:', err.message);
     done(err, null);
   }
 });

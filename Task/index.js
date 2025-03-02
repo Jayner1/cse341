@@ -1,37 +1,28 @@
 require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const session = require('express-session');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const passport = require('./config/passport-setup');
 const taskRoutes = require('./routes/taskRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger/swagger.json');
 
 const app = express();
 
-app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
+app.use(cors({ 
+  origin: 'https://task-as5j.onrender.com', 
+  credentials: true 
+}));
 app.use(express.json());
 app.use(session({
-  secret: 'your_secret_key',
+  secret: process.env.SESSION_SECRET || 'your_secret_key',
   resave: false,
   saveUninitialized: true,
+  cookie: { secure: true }, 
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_CALLBACK_URL,
-}, (accessToken, refreshToken, profile, done) => {
-  return done(null, profile);
-}));
-
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
 
 const scopes = [
   'https://www.googleapis.com/auth/userinfo.email',
@@ -43,13 +34,20 @@ app.get('/auth/google', passport.authenticate('google', { scope: scopes }));
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('/api-docs'); 
+    res.redirect('/api-docs');
   }
 );
 
 app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/'); 
+  req.logout((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+      return res.status(500).send('Logout failed');
+    }
+    req.session.destroy((err) => {
+      if (err) console.error('Session destroy error:', err);
+      res.redirect('/');
+    });
   });
 });
 
@@ -60,12 +58,16 @@ app.get('/', (req, res) => {
   `);
 });
 
-app.use('/tasks', (req, res, next) => {
+const ensureAuthenticated = (req, res, next) => {
   if (!req.isAuthenticated()) {
     return res.status(401).json({ error: 'Unauthorized. Please log in with Google.' });
   }
   next();
-}, taskRoutes);
+};
+
+app.use('/tasks', ensureAuthenticated, taskRoutes);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const connectDB = async () => {
   try {
@@ -80,11 +82,11 @@ const connectDB = async () => {
   }
 };
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-connectDB();
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
+connectDB().then(() => {
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}).catch((err) => {
+  console.error('Failed to start server due to DB error:', err);
 });

@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
-const { taskValidation, validateTaskId, handleValidationErrors } = require('../validation/taskValidation'); 
+const { taskValidation, validateTaskId, handleValidationErrors } = require('../validation/taskValidation');
 
 // GET all tasks
-router.get('/', taskController.getTasks);
+router.get('/', taskController.getTasks); // Already protected by ensureAuthenticated in index.js
 
 // GET a task by ID
 router.get('/:id', validateTaskId, handleValidationErrors, taskController.getTaskById);

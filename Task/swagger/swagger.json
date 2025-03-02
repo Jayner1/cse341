@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Task Manager API",
-    "description": "API documentation for the Task Manager application",
+    "description": "API documentation for the Task Manager application with Google OAuth authentication",
     "version": "1.0.0"
   },
   "host": "task-as5j.onrender.com",
@@ -11,64 +11,126 @@
     "https"
   ],
   "securityDefinitions": {
-    "apiKey": {
-      "type": "apiKey",
-      "in": "header",
-      "name": "apiKey",
-      "description": "API Key needed to access the endpoints"
-    },
     "OAuth2": {
       "type": "oauth2",
       "flow": "implicit",
       "authorizationUrl": "https://accounts.google.com/o/oauth2/auth",
-      "tokenUrl": "https://oauth2.googleapis.com/token",
       "scopes": {
-        "read": "Read access to tasks",
-        "write": "Write access to tasks"
+        "https://www.googleapis.com/auth/userinfo.profile": "Access user profile",
+        "https://www.googleapis.com/auth/userinfo.email": "Access user email"
       }
     }
   },
   "paths": {
-    "/": {
+    "/auth/google": {
       "get": {
-        "description": "Retrieve all tasks",
+        "summary": "Initiate Google OAuth login",
+        "description": "Redirects to Google for authentication",
+        "responses": {
+          "302": {
+            "description": "Redirects to Google OAuth"
+          }
+        }
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "summary": "Google OAuth callback",
+        "description": "Handles Google OAuth callback and redirects to API docs",
+        "responses": {
+          "302": {
+            "description": "Redirects to /api-docs on success or / on failure"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "get": {
+        "summary": "Log out the authenticated user",
+        "description": "Destroys the session and redirects to home",
+        "responses": {
+          "302": {
+            "description": "Redirects to /"
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "summary": "Get all tasks for the authenticated user",
+        "description": "Returns tasks owned by the logged-in user",
+        "security": [
+          {
+            "OAuth2": [
+              "https://www.googleapis.com/auth/userinfo.profile"
+            ]
+          }
+        ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "List of tasks",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Task"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - User not logged in"
           },
           "404": {
-            "description": "Not Found"
+            "description": "No tasks found for this user"
           }
         }
       },
       "post": {
-        "description": "Create a new task",
+        "summary": "Create a new task",
+        "description": "Creates a task for the authenticated user",
+        "security": [
+          {
+            "OAuth2": [
+              "https://www.googleapis.com/auth/userinfo.profile"
+            ]
+          }
+        ],
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Task"
+              "$ref": "#/definitions/TaskInput"
             }
           }
         ],
         "responses": {
           "201": {
-            "description": "Created",
+            "description": "Task created",
             "schema": {
               "$ref": "#/definitions/Task"
             }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Validation failed"
+          },
+          "401": {
+            "description": "Unauthorized - User not logged in"
           }
         }
       }
     },
-    "/{id}": {
+    "/tasks/{id}": {
       "get": {
-        "description": "Retrieve a task by ID",
+        "summary": "Get a task by ID",
+        "description": "Returns a task owned by the authenticated user",
+        "security": [
+          {
+            "OAuth2": [
+              "https://www.googleapis.com/auth/userinfo.profile"
+            ]
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -79,21 +141,29 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Task details",
             "schema": {
               "$ref": "#/definitions/Task"
             }
           },
-          "400": {
-            "description": "Bad Request"
+          "401": {
+            "description": "Unauthorized - User not logged in"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Task not found or not authorized"
           }
         }
       },
       "put": {
-        "description": "Update a task by ID",
+        "summary": "Update a task by ID",
+        "description": "Updates a task owned by the authenticated user",
+        "security": [
+          {
+            "OAuth2": [
+              "https://www.googleapis.com/auth/userinfo.profile"
+            ]
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -106,24 +176,38 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Task"
+              "$ref": "#/definitions/TaskInput"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "No Content"
+          "200": {
+            "description": "Task updated",
+            "schema": {
+              "$ref": "#/definitions/Task"
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request - Validation failed"
+          },
+          "401": {
+            "description": "Unauthorized - User not logged in"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Task not found or not authorized"
           }
         }
       },
       "delete": {
-        "description": "Delete a task by ID",
+        "summary": "Delete a task by ID",
+        "description": "Deletes a task owned by the authenticated user",
+        "security": [
+          {
+            "OAuth2": [
+              "https://www.googleapis.com/auth/userinfo.profile"
+            ]
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -134,13 +218,21 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Task deleted successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
           },
-          "400": {
-            "description": "Bad Request"
+          "401": {
+            "description": "Unauthorized - User not logged in"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Task not found or not authorized"
           }
         }
       }
@@ -149,12 +241,6 @@
   "definitions": {
     "Task": {
       "type": "object",
-      "required": [
-        "title",
-        "description",
-        "dueDate",
-        "status"
-      ],
       "properties": {
         "_id": {
           "type": "string",
@@ -170,22 +256,63 @@
         },
         "dueDate": {
           "type": "string",
-          "format": "date",
-          "description": "Due date of the task"
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Due date of the task in YYYY-MM-DD format (e.g., 2025-03-20)"
         },
         "status": {
           "type": "string",
           "enum": [
             "pending",
-            "completed",
-            "in-progress"
+            "in-progress",
+            "completed"
           ],
           "description": "Status of the task"
         },
-        "completed": {
-          "type": "boolean",
-          "description": "Whether the task is completed",
-          "default": false
+        "userId": {
+          "type": "string",
+          "description": "ID of the user who owns the task"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Task creation date"
+        }
+      }
+    },
+    "TaskInput": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "dueDate",
+        "status"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the task (3-100 characters)",
+          "minLength": 3,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the task (5-500 characters)",
+          "minLength": 5,
+          "maxLength": 500
+        },
+        "dueDate": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Due date of the task in YYYY-MM-DD format (e.g., 2025-03-20), must be today or in the future"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "in-progress",
+            "completed"
+          ],
+          "description": "Status of the task"
         }
       }
     }

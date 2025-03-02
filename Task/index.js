@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const cookieParser = require('cookie-parser'); // Add cookie-parser
 const passport = require('./config/passport-setup');
 const taskRoutes = require('./routes/taskRoutes');
 const swaggerUi = require('swagger-ui-express');
@@ -19,21 +20,16 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
-
-// Session Setup with Debugging
-const sessionStore = MongoStore.create({
-  mongoUrl: process.env.MONGO_URI,
-  collectionName: 'sessions',
-  ttl: 24 * 60 * 60,
-});
-sessionStore.on('error', (err) => {
-  console.error('Session store error:', err);
-});
+app.use(cookieParser()); // Parse cookies before session
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your_secret_key',
   resave: false,
   saveUninitialized: false,
-  store: sessionStore,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: 'sessions',
+    ttl: 24 * 60 * 60,
+  }),
   cookie: { 
     secure: true,
     sameSite: 'lax',
@@ -138,7 +134,11 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
     console.log('Connected to the database!');
-    // Test session store connection
+    const sessionStore = MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: 'sessions',
+      ttl: 24 * 60 * 60,
+    });
     await sessionStore.set('test-session', { test: 'working' });
     console.log('Session store test set successful');
   } catch (err) {
